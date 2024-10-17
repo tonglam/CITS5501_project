@@ -47,5 +47,5 @@ public enum BarrierAction {
   /**
    * Closes the barrier, restricting access or visibility.
    */
-  CLOSE;
+  CLOSE
 }
