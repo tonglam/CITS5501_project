@@ -31,12 +31,12 @@ To run the parser using Docker, follow these steps:
 
 2. Pull the Docker image:
    ```
-   docker pull tonglam/cits5501-project:latest
+   docker pull tonglam/cits5501-project:lastest
    ```
 
 3. Run the parser using the following command:
    ```
-   docker run -it tonglam/cits5501-project:latest
+   docker run -it tonglam/cits5501-project:lastest
    ```
 
 ## Running Example
