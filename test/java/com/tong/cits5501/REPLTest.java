@@ -3,13 +3,13 @@ package com.tong.cits5501;
 import com.tong.cits5501.parser.REPL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-/**
- * Test class for {@link REPL}.
- */
 public class REPLTest {
 
     private REPL repl;
@@ -19,240 +19,159 @@ public class REPLTest {
         repl = new REPL();
     }
 
-    /**
-     * Tests the REPL parser with empty and whitespace-only commands.
-     * Verifies that the parser correctly identifies and reports empty commands.
-     */
-    @Test
-    void testEmptyCommand() {
-        // Test with an empty string
-        assertEquals("Error: Empty command", repl.parseCommand(""), "Empty string should be recognized as an empty command");
-
-        // Test with whitespace-only string
-        assertEquals("Error: Empty command", repl.parseCommand("   "), "Whitespace-only string should be recognized as an empty command");
+    @ParameterizedTest
+    @ValueSource(strings = {"   ", "\t", "\n"})
+    void testEmptyCommand(String input) {
+        assertEquals("Error: Empty command", repl.parseCommand(input));
     }
 
-    /**
-     * Tests the REPL parser with incomplete commands.
-     * Verifies that the parser correctly identifies and reports incomplete commands,
-     * both with and without location specifications.
-     */
-    @Test
-    void testIncompleteCommand() {
-        // Test incomplete command without location
-        assertEquals("Error: Incomplete command", repl.parseCommand("turn"), "Single word 'turn' should be recognized as an incomplete command");
-
-        // Test incomplete command with location
-        assertEquals("Error: Incomplete command after location", repl.parseCommand("living-room turn"),
-                "Command with location but incomplete action should be recognized as incomplete");
+    @ParameterizedTest
+    @ValueSource(strings = {"turn", "set", "open", "kitchen turn"})
+    void testIncompleteCommand(String input) {
+        assertTrue(repl.parseCommand(input).startsWith("Error: Incomplete command"));
     }
 
-    /**
-     * Tests the REPL parser with valid turn commands for different devices and states.
-     * Verifies that the parser correctly recognizes and interprets turn commands for
-     * light sources and appliances in both ON and OFF states.
-     */
-    @Test
-    void testValidTurnCommand() {
-        // Test turn command for a lamp
-        assertEquals("Command recognized: Turn lamp ON", repl.parseCommand("turn lamp on"),
-                "Valid turn command for lamp should be recognized");
-
-        // Test turn command for a bulb
-        assertEquals("Command recognized: Turn bulb OFF", repl.parseCommand("turn bulb off"),
-                "Valid turn command for bulb should be recognized");
-
-        // Test turn command for an appliance
-        assertEquals("Command recognized: Turn coffee-maker ON", repl.parseCommand("turn coffee-maker on"),
-                "Valid turn command for coffee-maker should be recognized");
+    @ParameterizedTest
+    @CsvSource({
+            "turn lamp on, LightingCommand",
+            "turn bulb off, LightingCommand",
+            "kitchen turn neon on, LightingCommand",
+            "living-room turn sconce off, LightingCommand",
+            "turn brazier on, LightingCommand"
+    })
+    void testValidLightingCommands(String input, String expectedCommandType) {
+        String result = repl.parseCommand(input);
+        assertTrue(result.contains("Command recognized: " + expectedCommandType));
+        assertTrue(result.contains("Simulated execution: Turning"));
     }
 
-    /**
-     * Tests the REPL parser with invalid turn commands.
-     * Verifies that the parser correctly identifies and reports errors for turn commands
-     * with invalid device types or states.
-     */
-    @Test
-    void testInvalidTurnCommand() {
-        // Test turn command with invalid device
-        assertEquals("Error: Invalid device type for 'turn' command", repl.parseCommand("turn chair on"),
-                "Turn command for invalid device should be rejected");
-
-        // Test turn command with invalid state
-        assertEquals("Error: Invalid state. Use ON or OFF", repl.parseCommand("turn lamp toggle"),
-                "Turn command with invalid state should be rejected");
+    @ParameterizedTest
+    @CsvSource({
+            "turn coffee-maker on, ApplianceCommand",
+            "turn oven off, ApplianceCommand",
+            "kitchen turn air-conditioner on, ApplianceCommand",
+            "lab turn centrifuge off, ApplianceCommand",
+            "turn synchrotron on, ApplianceCommand",
+            "turn laser-cannon off, ApplianceCommand"
+    })
+    void testValidApplianceCommands(String input, String expectedCommandType) {
+        String result = repl.parseCommand(input);
+        assertTrue(result.contains("Command recognized: " + expectedCommandType),
+                "Expected 'Command recognized: " + expectedCommandType + "' not found in result: " + result);
+        assertTrue(result.contains("Simulated execution: Turning"),
+                "Simulated execution not found in result: " + result);
     }
 
-    /**
-     * Tests the REPL parser with valid barrier commands for different actions and barriers.
-     * Verifies that the parser correctly recognizes and interprets barrier commands
-     * for various barrier types and actions.
-     */
-    @Test
-    void testValidBarrierCommand() {
-        // Test open command for gate
-        assertEquals("Command recognized: OPEN gate", repl.parseCommand("open gate"),
-                "Valid open command for gate should be recognized");
-
-        // Test close command for curtains
-        assertEquals("Command recognized: CLOSE curtains", repl.parseCommand("close curtains"),
-                "Valid close command for curtains should be recognized");
-
-        // Test lock command for blast-door
-        assertEquals("Command recognized: LOCK blast-door", repl.parseCommand("lock blast-door"),
-                "Valid lock command for blast-door should be recognized");
+    @ParameterizedTest
+    @CsvSource({
+            "open gate, BarrierCommand",
+            "close garage-door, BarrierCommand",
+            "lock trapdoor, BarrierCommand",
+            "unlock portcullis, BarrierCommand",
+            "open drawbridge, BarrierCommand",
+            "close blast-door, BarrierCommand",
+            "lock airlock, BarrierCommand"
+    })
+    void testValidBarrierCommands(String input, String expectedCommandType) {
+        String result = repl.parseCommand(input);
+        assertTrue(result.contains("Command recognized: " + expectedCommandType),
+                "Expected 'Command recognized: " + expectedCommandType + "' not found in result: " + result);
+        assertTrue(result.contains("Simulated execution:"),
+                "Simulated execution not found in result: " + result);
     }
 
-    /**
-     * Tests the REPL parser with invalid barrier commands.
-     * Verifies that the parser correctly identifies and reports errors for barrier commands
-     * with invalid barrier types or incomplete specifications.
-     */
-    @Test
-    void testInvalidBarrierCommand() {
-        // Test barrier command with invalid barrier type
-        assertEquals("Error: Invalid barrier type", repl.parseCommand("open door"),
-                "Barrier command for invalid barrier type should be rejected");
-
-        // Test incomplete barrier command
-        assertEquals("Error: Incomplete command", repl.parseCommand("close"),
-                "Incomplete barrier command should be rejected");
+    @ParameterizedTest
+    @CsvSource({
+            "set thermostat to 295K, ThermalDeviceCommand",
+            "set oven to 450K, ThermalDeviceCommand",
+            "kitchen set electric-blanket to 310K, ThermalDeviceCommand",
+            "set incinerator to 1000K, ThermalDeviceCommand",
+            "set reactor-core to 5000K, ThermalDeviceCommand"
+    })
+    void testValidThermalDeviceCommands(String input, String expectedCommandType) {
+        String result = repl.parseCommand(input);
+        assertTrue(result.contains("Command recognized: " + expectedCommandType),
+                "Expected 'Command recognized: " + expectedCommandType + "' not found in result: " + result);
+        assertTrue(result.contains("Simulated execution: Setting"),
+                "Simulated execution not found in result: " + result);
     }
 
-    /**
-     * Tests the REPL parser with valid set commands for thermal devices.
-     * Verifies that the parser correctly recognizes and interprets set commands
-     * for different thermal devices and temperature values.
-     */
     @Test
-    void testValidSetCommand() {
-        // Test set command for thermostat
-        assertEquals("Command recognized: Set thermostat to 295 K", repl.parseCommand("set thermostat to 295K"),
-                "Valid set command for thermostat should be recognized");
-
-        // Test set command for oven
-        assertEquals("Command recognized: Set oven to 450 K", repl.parseCommand("set oven to 450K"),
-                "Valid set command for oven should be recognized");
+    void testInvalidDeviceType() {
+        assertEquals("Error: Invalid device type for 'turn' command", repl.parseCommand("turn invalid-device on"));
+        assertEquals("Error: Invalid barrier type", repl.parseCommand("open invalid-barrier"));
+        assertEquals("Error: Invalid thermal device type", repl.parseCommand("set invalid-device to 300K"));
     }
 
-    /**
-     * Tests the REPL parser with invalid set commands.
-     * Verifies that the parser correctly identifies and reports errors for set commands
-     * with invalid device types, temperature formats, or incomplete specifications.
-     */
     @Test
-    void testInvalidSetCommand() {
-        // Test set command with invalid device type
-        assertEquals("Error: Invalid thermal device type", repl.parseCommand("set lamp to 300K"),
-                "Set command for invalid thermal device should be rejected");
-
-        // Test set command with invalid temperature format
-        assertEquals("Error: Temperature must end with K", repl.parseCommand("set thermostat to 30C"),
-                "Set command with invalid temperature format should be rejected");
-
-        // Test incomplete set command
-        assertEquals("Error: Set command is incomplete", repl.parseCommand("set thermostat to"),
-                "Incomplete set command should be rejected");
+    void testInvalidState() {
+        assertEquals("Error: Invalid state. Use ON or OFF", repl.parseCommand("turn lamp invalid"));
     }
 
-    /**
-     * Tests the REPL parser with valid temperature condition commands.
-     * Verifies that the parser correctly recognizes and interprets temperature conditions
-     * for both 'when' and 'until' scenarios.
-     */
-    @Test
-    void testValidTemperatureCondition() {
-        // Test 'when' temperature condition
-        assertEquals("Error: Invalid device type for 'turn' command",
-                repl.parseCommand("turn heater on when current-temperature less-than 290K"),
-                "Valid 'when' temperature condition should be recognized");
-
-        // Test 'until' temperature condition
-        assertEquals("Command recognized: Turn air-conditioner ON",
-                repl.parseCommand("turn air-conditioner on until current-temperature greater-than 300K"),
-                "Valid 'until' temperature condition should be recognized");
+    @ParameterizedTest
+    @ValueSource(strings = {"set thermostat to invalid", "set thermostat to 300", "set thermostat to -100K", "set thermostat to 0K"})
+    void testInvalidTemperature(String input) {
+        String result = repl.parseCommand(input);
+        assertTrue(result.startsWith("Error:"), "Expected error for input: " + input);
     }
 
-    /**
-     * Tests the REPL parser with invalid temperature condition commands.
-     * Verifies that the parser correctly identifies and reports errors for temperature conditions
-     * with invalid formats or comparisons.
-     */
+    @ParameterizedTest
+    @CsvSource({
+            "turn lamp on when current-temperature less-than 300K, When condition: TemperatureCondition at 300K, comparison: LESS_THAN",
+            "set thermostat to 295K until 10:00 pm, Until condition: TimeCondition at 22:00",
+            "open gate when current-temperature greater-than 305K until 08:30 am, When condition: TemperatureCondition at 305K, comparison: GREATER_THAN;Until condition: TimeCondition at 08:30",
+            "turn bulb off when current-temperature greater-than 300 K, When condition: TemperatureCondition at 300K, comparison: GREATER_THAN"
+    })
+    void testValidCommandsWithConditions(String input, String expectedPartsString) {
+        String result = repl.parseCommand(input);
+        assertTrue(result.contains("Command recognized:"), "Main command not recognized: " + result);
+
+        String[] expectedParts = expectedPartsString.split(";");
+        for (String part : expectedParts) {
+            assertTrue(result.contains(part), "Expected part not found: " + part + " in result: " + result);
+        }
+    }
+
     @Test
     void testInvalidTemperatureCondition() {
-        // Test invalid temperature condition format
-        assertEquals("Error: Invalid device type for 'turn' command",
-                repl.parseCommand("turn heater on when temperature cold"),
-                "Invalid temperature condition format should be rejected");
-
-        // Test invalid comparison in temperature condition
-        assertEquals("Command recognized: Turn air-conditioner ON",
-                repl.parseCommand("turn air-conditioner on until current-temperature invalid-comp 300K"),
-                "Invalid comparison in temperature condition should be rejected");
+        assertEquals("Error: Invalid temperature condition format",
+                repl.parseCommand("turn lamp on when current-temperature less-than"));
     }
 
-    /**
-     * Tests the REPL parser with valid time condition commands.
-     * Verifies that the parser correctly recognizes and interprets time conditions
-     * for both 'when' and 'until' scenarios.
-     */
-    @Test
-    void testValidTimeCondition() {
-        // Test 'when' time condition
-        assertEquals("Command recognized: OPEN curtains",
-                repl.parseCommand("open curtains when 08:00am"),
-                "Valid 'when' time condition should be recognized");
-
-        // Test 'until' time condition
-        assertEquals("Command recognized: Turn lamp ON",
-                repl.parseCommand("turn lamp on until 10:00pm"),
-                "Valid 'until' time condition should be recognized");
+    @ParameterizedTest
+    @ValueSource(strings = {"turn lamp on until invalid-time", "turn lamp on until 25:00 pm", "turn lamp on until 10:60 am"})
+    void testInvalidTimeCondition(String input) {
+        String result = repl.parseCommand(input);
+        assertTrue(result.startsWith("Error:"), "Expected error for input: " + input);
     }
 
-    /**
-     * Tests the REPL parser with invalid time condition commands.
-     * Verifies that the parser correctly identifies and reports errors for time conditions
-     * with invalid time formats or values.
-     */
     @Test
-    void testInvalidTimeCondition() {
-        // Test invalid time value
-        assertEquals("Command recognized: OPEN curtains",
-                repl.parseCommand("open curtains when 25:00am"),
-                "Invalid time value should be rejected");
-
-        // Test invalid time format
-        assertEquals("Command recognized: Turn lamp ON",
-                repl.parseCommand("turn lamp on until 10pm"),
-                "Invalid time format should be rejected");
+    void testMultipleConditions() {
+        String result = repl.parseCommand("turn lamp on when current-temperature less-than 300K until 10:00 pm");
+        assertTrue(result.contains("Command recognized: LightingCommand"));
+        assertTrue(result.contains("When condition: TemperatureCondition at 300K, comparison: LESS_THAN"));
+        assertTrue(result.contains("Until condition: TimeCondition at 22:00"));
     }
 
-    /**
-     * Tests the REPL parser with commands that include location specifications.
-     * Verifies that the parser correctly recognizes and interprets commands
-     * that include a location before the main command.
-     */
-    @Test
-    void testCommandWithLocation() {
-        // Test turn command with location
-        assertEquals("Command recognized: Turn lamp ON",
-                repl.parseCommand("bedroom turn lamp on"),
-                "Turn command with location should be recognized");
-
-        // Test barrier command with location
-        assertEquals("Command recognized: OPEN window",
-                repl.parseCommand("living-room open window"),
-                "Barrier command with location should be recognized");
+    @ParameterizedTest
+    @CsvSource({
+            "turn lamp on until 9:30 am, Until condition: TimeCondition at 09:30",
+            "turn lamp on until 11:45 pm, Until condition: TimeCondition at 23:45",
+            "turn lamp on when 1:05 am, When condition: TimeCondition at 01:05",
+            "turn lamp on when 12:00 pm, When condition: TimeCondition at 12:00"
+    })
+    void testTimeConditions(String input, String expected) {
+        String result = repl.parseCommand(input);
+        assertTrue(result.contains("Command recognized: LightingCommand"));
+        assertTrue(result.contains(expected));
     }
 
-    /**
-     * Tests the REPL parser with completely invalid commands.
-     * Verifies that the parser correctly identifies and reports errors for commands
-     * that do not match any valid command structure.
-     */
     @Test
-    void testInvalidCommand() {
-        assertEquals("Error: Invalid command", repl.parseCommand("dance robot dance"),
-                "Completely invalid command should be rejected");
+    void testComplexCommand() {
+        String result = repl.parseCommand("basement turn synchrotron on when current-temperature less-than 273K until 11:59 pm");
+        assertTrue(result.contains("Command recognized: ApplianceCommand"));
+        assertTrue(result.contains("When condition: TemperatureCondition at 273K, comparison: LESS_THAN"));
+        assertTrue(result.contains("Until condition: TimeCondition at 23:59"));
+        assertTrue(result.contains("Simulated execution: Turning on the synchrotron at basement"));
     }
 }

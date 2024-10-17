@@ -11,7 +11,7 @@ package com.tong.cits5501.domolect.command;
  * </p>
  * 
  * <p>
- * Subclasses of {@code java.com.tong.cits5501.command.Condition} should implement the logic required to
+ * Subclasses of {@code Condition} should implement the logic required to
  * evaluate the specific condition they represent.
  * </p>
  */

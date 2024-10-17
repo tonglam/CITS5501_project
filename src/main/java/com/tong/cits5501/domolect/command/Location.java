@@ -8,7 +8,7 @@ public final class Location {
   private final String name;
 
   /**
-   * Constructs a new java.com.tong.cits5501.command.Location with the specified name.
+   * Constructs a new Location with the specified name.
    *
    * @param name the name of the location, which must be unique within the system.
    */
@@ -26,14 +26,14 @@ public final class Location {
   }
 
   /**
-   * Checks whether this java.com.tong.cits5501.command.Location is equal to another object.
+   * Checks whether this Location is equal to another object.
    * Two Locations are considered equal if they have the same name.
-   * (Note, however, that since names must be unique, if a java.com.tong.cits5501.command.Location
-   * compares equal to another java.com.tong.cits5501.command.Location, it follows it must in fact
+   * (Note, however, that since names must be unique, if a Location
+   * compares equal to another Location, it follows it must in fact
    * be the same object.)
    *
-   * @param obj the object to compare with this java.com.tong.cits5501.command.Location.
-   * @return true if the given object is a java.com.tong.cits5501.command.Location with the same name; false otherwise.
+   * @param obj the object to compare with this Location.
+   * @return true if the given object is a Location with the same name; false otherwise.
    */
   @Override
   public boolean equals(Object obj) {
@@ -48,9 +48,9 @@ public final class Location {
   }
 
   /**
-   * Returns a hash code value for this java.com.tong.cits5501.command.Location.
+   * Returns a hash code value for this Location.
    *
-   * @return a hash code value for this java.com.tong.cits5501.command.Location, based on its name.
+   * @return a hash code value for this Location, based on its name.
    */
   @Override
   public int hashCode() {

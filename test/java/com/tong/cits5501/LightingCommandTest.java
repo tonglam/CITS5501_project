@@ -22,8 +22,8 @@ public class LightingCommandTest {
     void testLightingCommandWithNonNullLocationLampOn() {
         // Arrange
         Location location = new Location("Living Room");
-        LightSource lightSource = new LightSource("Lamp");
         State state = State.ON;
+        LightSource lightSource = new LightSource("Lamp", state);
 
         // Act
         LightingCommand command = new LightingCommand(location, lightSource, state);
@@ -43,8 +43,8 @@ public class LightingCommandTest {
     void testLightingCommandWithNullLocationBulbOff() {
         // Arrange
         Location location = null;
-        LightSource lightSource = new LightSource("Bulb");
         State state = State.OFF;
+        LightSource lightSource = new LightSource("Bulb", state);
 
         // Act
         LightingCommand command = new LightingCommand(location, lightSource, state);

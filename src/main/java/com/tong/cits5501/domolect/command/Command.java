@@ -19,7 +19,7 @@ public abstract class Command implements Executable {
   private final Location location;
 
   /**
-   * Constructs a new {@code java.com.tong.cits5501.command.Command} with the specified location.
+   * Constructs a new {@code Command} with the specified location.
    * 
    * @param location The location where the command is applicable. 
    *                 Can be null for commands that apply globally.
@@ -40,14 +40,14 @@ public abstract class Command implements Executable {
 
   /**
    * Executes the command. The specific implementation will be defined 
-   * in subclasses of {@code java.com.tong.cits5501.command.Command}.
+   * in subclasses of {@code Command}.
    */
   @Override
   public abstract void execute();
 
   @Override
   public String toString() {
-  	return "java.com.tong.cits5501.command.Command [location=" + location + "]";
+  	return "Command [location=" + location + "]";
   }
   
 }
